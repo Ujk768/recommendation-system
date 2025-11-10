@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Course Recommendation System</title>
+	<style>
+		body {
+			font-family: Poppins, sans-serif;
+			background: #f5f6fa;
+			margin: 0;
+			padding: 40px;
+			display: flex;
+			justify-content: center;
+		}
+
+		.container {
+			background: white;
+			padding: 30px;
+			border-radius: 16px;
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+			width: 450px;
+		}
+
+		h1 {
+			text-align: center;
+			color: #222;
+		}
+
+		label {
+			font-weight: bold;
+			display: block;
+			margin-top: 20px;
+		}
+
+		select,
+		input[type="text"],
+		button {
+			width: 100%;
+			padding: 10px;
+			margin-top: 8px;
+			border-radius: 8px;
+			border: 1px solid #ccc;
+			font-size: 16px;
+		}
+
+		button {
+			background-color: #007bff;
+			color: white;
+			border: none;
+			cursor: pointer;
+			transition: background 0.3s;
+		}
+
+		button:hover {
+			background-color: #0056b3;
+		}
+
+		.results {
+			margin-top: 25px;
+			padding: 15px;
+			background: #f1f1f1;
+			border-radius: 8px;
+		}
+
+		.course {
+			background: white;
+			padding: 10px;
+			margin-top: 10px;
+			border-left: 4px solid #007bff;
+			border-radius: 6px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="container">
+		<h1>Course Recommendation</h1>
+
+		<label for="interest">Select Your Interest:</label>
+		<select id="interest">
+			<option value="">-- Choose an interest --</option>
+			<option value="ai">Artificial Intelligence</option>
+			<option value="web">Web Development</option>
+			<option value="data">Data Science</option>
+			<option value="cyber">Cyber Security</option>
+			<option value="design">UI/UX Design</option>
+		</select>
+
+		<label for="level">Skill Level:</label>
+		<select id="level">
+			<option value="">-- Select your level --</option>
+			<option value="beginner">Beginner</option>
+			<option value="intermediate">Intermediate</option>
+			<option value="advanced">Advanced</option>
+		</select>
+
+		<button onclick="recommendCourse()">Get Recommendations</button>
+
+		<div id="results" class="results" style="display:none;">
+			<h3>Recommended Courses:</h3>
+			<div id="courseList"></div>
+		</div>
+	</div>
+
+	<script>
+		const courses = {
+			ai: {
+				beginner: ["Intro to AI", "Python for AI Basics", "Machine Learning 101"],
+				intermediate: ["Deep Learning with TensorFlow", "AI Model Deployment", "NLP Applications"],
+				advanced: ["Reinforcement Learning", "Advanced Neural Networks", "AI Ethics & Bias"]
+			},
+			web: {
+				beginner: ["HTML & CSS Basics", "JavaScript Fundamentals", "Intro to Frontend Development"],
+				intermediate: ["React.js Essentials", "Node.js Backend", "Full Stack Projects"],
+				advanced: ["Next.js Framework", "Advanced Web Performance", "Web Security & APIs"]
+			},
+			data: {
+				beginner: ["Excel for Data Analysis", "Intro to Python", "Data Visualization Basics"],
+				intermediate: ["Data Wrangling with Pandas", "SQL for Analysts", "Exploratory Data Analysis"],
+				advanced: ["Machine Learning", "Big Data Tools (Spark, Hadoop)", "Predictive Analytics"]
+			},
+			cyber: {
+				beginner: ["Cybersecurity Basics", "Network Fundamentals", "Password Protection 101"],
+				intermediate: ["Ethical Hacking", "Malware Analysis", "Incident Response"],
+				advanced: ["Penetration Testing", "Cloud Security", "Advanced Network Defense"]
+			},
+			design: {
+				beginner: ["Intro to UI Design", "Color Theory Basics", "Figma Fundamentals"],
+				intermediate: ["Responsive Design", "Prototyping in Figma", "User Testing Methods"],
+				advanced: ["Design Systems", "Advanced Animation", "UX Strategy & Research"]
+			}
+		};
+
+		function recommendCourse() {
+			const interest = document.getElementById("interest").value;
+			const level = document.getElementById("level").value;
+			const resultDiv = document.getElementById("results");
+			const listDiv = document.getElementById("courseList");
+
+			listDiv.innerHTML = ""; // clear old results
+
+			if (!interest || !level) {
+				alert("Please select both interest and skill level.");
+				return;
+			}
+
+			const recs = courses[interest][level];
+			resultDiv.style.display = "block";
+
+			recs.forEach(course => {
+				const div = document.createElement("div");
+				div.className = "course";
+				div.textContent = course;
+				listDiv.appendChild(div);
+			});
+		}
+	</script>
+
+</body>
+
+</html>
