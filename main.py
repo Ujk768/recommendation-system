@@ -1,151 +1,165 @@
-import numpy as np
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from rapidfuzz import process, fuzz   # faster fuzzy string matching
+<!DOCTYPE html>
+<html lang="en">
 
-# Load dataset
-df = pd.read_csv('udemy_courses.csv')
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Course Recommendation System</title>
+	<style>
+		body {
+			font-family: Poppins, sans-serif;
+			background: #f5f6fa;
+			margin: 0;
+			padding: 40px;
+			display: flex;
+			justify-content: center;
+		}
 
-print(df.head())
+		.container {
+			background: white;
+			padding: 30px;
+			border-radius: 16px;
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+			width: 450px;
+		}
 
-# Combine text fields for TF-IDF features
-df['combined_features'] = (
-    df['course_title'].fillna('') + ' ' +
-    df['subject'].fillna('') + ' ' +
-    df['level'].fillna('')
-)
+		h1 {
+			text-align: center;
+			color: #222;
+		}
 
-# TF-IDF vectorization
-tfidf = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf.fit_transform(df['combined_features'])
+		label {
+			font-weight: bold;
+			display: block;
+			margin-top: 20px;
+		}
 
-# Cosine similarity matrix
-cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-indices = pd.Series(df.index, index=df['course_title']).drop_duplicates()
-df['popularity_weight'] = df['num_subscribers'] / df['num_subscribers'].max()
+		select,
+		input[type="text"],
+		button {
+			width: 100%;
+			padding: 10px;
+			margin-top: 8px;
+			border-radius: 8px;
+			border: 1px solid #ccc;
+			font-size: 16px;
+		}
 
+		button {
+			background-color: #007bff;
+			color: white;
+			border: none;
+			cursor: pointer;
+			transition: background 0.3s;
+		}
 
-# ---------------------------
-# Helper: fuzzy matching
-# ---------------------------
-def find_best_match(query, titles, limit=1, threshold=60):
-    matches = process.extract(query, titles, scorer=fuzz.token_sort_ratio, limit=limit)
-    # Return matches that are above threshold (out of 100)
-    return [m[0] for m in matches if m[1] >= threshold]
+		button:hover {
+			background-color: #0056b3;
+		}
 
+		.results {
+			margin-top: 25px;
+			padding: 15px;
+			background: #f1f1f1;
+			border-radius: 8px;
+		}
 
-# ---------------------------
-# Main recommendation logic
-# ---------------------------
+		.course {
+			background: white;
+			padding: 10px;
+			margin-top: 10px;
+			border-left: 4px solid #007bff;
+			border-radius: 6px;
+		}
+	</style>
+</head>
 
-def recommend_for_user(inputs, n=10):
-    """Recommend new courses based on multiple user inputs (titles or topics)."""
-    sim_scores = np.zeros(df.shape[0])
-    matched_courses = []
-    valid_inputs = 0
+<body>
 
-    for text in inputs:
-        text = text.strip()
-        if not text:
-            continue
+	<div class="container">
+		<h1>Course Recommendation</h1>
 
-        # 1️⃣ Exact match
-        if text in indices:
-            matched_courses.append(text)
-            idx = indices[text]
-            sim_scores += cosine_sim[idx]
-            valid_inputs += 1
-            continue
+		<label for="interest">Select Your Interest:</label>
+		<select id="interest">
+			<option value="">-- Choose an interest --</option>
+			<option value="ai">Artificial Intelligence</option>
+			<option value="web">Web Development</option>
+			<option value="data">Data Science</option>
+			<option value="cyber">Cyber Security</option>
+			<option value="design">UI/UX Design</option>
+		</select>
 
-        # 2️⃣ Fuzzy match (partial title)
-        fuzzy_matches = find_best_match(text, df['course_title'].tolist(), limit=1)
-        if fuzzy_matches:
-            best_match = fuzzy_matches[0]
-            print(f"🔍 '{text}' matched with course title: '{best_match}'")
-            matched_courses.append(best_match)
-            idx = indices[best_match]
-            sim_scores += cosine_sim[idx]
-            valid_inputs += 1
-            continue
+		<label for="level">Skill Level:</label>
+		<select id="level">
+			<option value="">-- Select your level --</option>
+			<option value="beginner">Beginner</option>
+			<option value="intermediate">Intermediate</option>
+			<option value="advanced">Advanced</option>
+		</select>
 
-        # 3️⃣ Treat as topic query
-        print(f"💡 Treating '{text}' as a topic...")
-        query_vec = tfidf.transform([text])
-        topic_sim = cosine_similarity(query_vec, tfidf_matrix).flatten()
-        sim_scores += topic_sim
-        valid_inputs += 1
+		<button onclick="recommendCourse()">Get Recommendations</button>
 
-    if valid_inputs == 0:
-        print("❌ No valid inputs or matches found.")
-        return pd.DataFrame()
+		<div id="results" class="results" style="display:none;">
+			<h3>Recommended Courses:</h3>
+			<div id="courseList"></div>
+		</div>
+	</div>
 
-    # Average similarity only for valid inputs
-    sim_scores /= valid_inputs
+	<script>
+		const courses = {
+			ai: {
+				beginner: ["Intro to AI", "Python for AI Basics", "Machine Learning 101"],
+				intermediate: ["Deep Learning with TensorFlow", "AI Model Deployment", "NLP Applications"],
+				advanced: ["Reinforcement Learning", "Advanced Neural Networks", "AI Ethics & Bias"]
+			},
+			web: {
+				beginner: ["HTML & CSS Basics", "JavaScript Fundamentals", "Intro to Frontend Development"],
+				intermediate: ["React.js Essentials", "Node.js Backend", "Full Stack Projects"],
+				advanced: ["Next.js Framework", "Advanced Web Performance", "Web Security & APIs"]
+			},
+			data: {
+				beginner: ["Excel for Data Analysis", "Intro to Python", "Data Visualization Basics"],
+				intermediate: ["Data Wrangling with Pandas", "SQL for Analysts", "Exploratory Data Analysis"],
+				advanced: ["Machine Learning", "Big Data Tools (Spark, Hadoop)", "Predictive Analytics"]
+			},
+			cyber: {
+				beginner: ["Cybersecurity Basics", "Network Fundamentals", "Password Protection 101"],
+				intermediate: ["Ethical Hacking", "Malware Analysis", "Incident Response"],
+				advanced: ["Penetration Testing", "Cloud Security", "Advanced Network Defense"]
+			},
+			design: {
+				beginner: ["Intro to UI Design", "Color Theory Basics", "Figma Fundamentals"],
+				intermediate: ["Responsive Design", "Prototyping in Figma", "User Testing Methods"],
+				advanced: ["Design Systems", "Advanced Animation", "UX Strategy & Research"]
+			}
+		};
 
-    # Optional: add popularity weighting
-    sim_scores = sim_scores * (0.7 + 0.3 * df['popularity_weight'])
+		function recommendCourse() {
+			const interest = document.getElementById("interest").value;
+			const level = document.getElementById("level").value;
+			const resultDiv = document.getElementById("results");
+			const listDiv = document.getElementById("courseList");
 
-    # Rank results
-    sorted_idx = sim_scores.argsort()[::-1]
-    result = df.iloc[sorted_idx]
+			listDiv.innerHTML = ""; // clear old results
 
-    # Filter out already matched courses
-    result = result[~result['course_title'].isin(matched_courses)]
-    result = result[['course_title', 'subject', 'price', 'num_subscribers']].head(n)
+			if (!interest || !level) {
+				alert("Please select both interest and skill level.");
+				return;
+			}
 
-    return result.reset_index(drop=True)
+			const recs = courses[interest][level];
+			resultDiv.style.display = "block";
 
+			recs.forEach(course => {
+				const div = document.createElement("div");
+				div.className = "course";
+				div.textContent = course;
+				listDiv.appendChild(div);
+			});
+		}
+	</script>
 
+</body>
 
-# ---------------------------
-# Interactive interface
-# ---------------------------
-print("🎓 Personalized Course Recommendation System")
-print("You can enter course titles or general topics (e.g. 'python', 'data science').")
-print("Type 'done' when finished.\n")
-
-user_inputs = []
-while True:
-    entry = input("Enter a course title or topic: ").strip()
-    if entry.lower() == 'done':
-        break
-    user_inputs.append(entry)
-
-print("\n📘 You entered:")
-print(user_inputs)
-
-recommendations = recommend_for_user(user_inputs, n=10)
-
-if recommendations.empty:
-    print("\n❌ No recommendations found.")
-else:
-    print("\n🎯 Recommended Courses:")
-    print(recommendations)
-
-# Adding Mock API
-try:
-    from typing import List, Optional
-    from pydantic import BaseModel
-    from fastapi import FastAPI
-
-    # Reuse existing recommend_for_user and pandas df
-    app = FastAPI(title="Course Recommender API (Mock)")
-
-    class RecRequest(BaseModel):
-        queries: List[str]
-        top_n: Optional[int] = 10
-
-    @app.post("/recommend")
-    def recommend(req: RecRequest):
-        results = recommend_for_user(req.queries, n=req.top_n)
-        try:
-            import pandas as _pd  # local import
-            if isinstance(results, _pd.DataFrame):
-                return {"results": results.to_dict(orient="records")}
-        except Exception:
-            pass
-        return {"results": results}
-except Exception as _api_err:
-       _api_err  
+</html>
 
