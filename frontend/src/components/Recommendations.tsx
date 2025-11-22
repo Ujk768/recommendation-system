@@ -230,7 +230,7 @@ const generateRecommendationsWithApi = async (data: UserPreferences) => {
     console.log("preferences data:", data);
     const res = await axios.post("http://127.0.0.1:8000/recommend", {
       inputs: data.interests,
-      n: 10,
+      n: 20,
     });
     console.log("res", res);
     return res.data.recommendations as ApiRes[];
@@ -366,7 +366,7 @@ export function Recommendations({
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    <span>{course.content_duration} hrs</span>
+                    <span>{course.content_duration.toFixed(1)} hrs</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <BarChart className="w-4 h-4" />

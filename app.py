@@ -33,51 +33,87 @@ def find_best_match(query, titles, limit=1, threshold=60):
     return [m[0] for m in matches if m[1] >= threshold]
 
 
+import numpy as np
+import pandas as pd
+
 def recommend_for_user(inputs, n=10):
     global df, cosine_sim, tfidf, tfidf_matrix, indices
 
-    sim_scores = np.zeros(df.shape[0])
+    # 1. Clean inputs
+    clean_inputs = [text.strip() for text in inputs if text.strip()]
+    if not clean_inputs:
+        return []
+    
     matched_courses = []
-    valid_inputs = 0
+    candidate_lists = []
 
-    for text in inputs:
-        text = text.strip()
-        if not text:
-            continue
-
+    # 2. Process each input INDIVIDUALLY
+    for text in clean_inputs:
+        # Reset scores for this specific input
+        sim_scores = np.zeros(df.shape[0])
+        input_found = False
+        
+        # Check Exact Match
         if text in indices:
             matched_courses.append(text)
             idx = indices[text]
-            sim_scores += cosine_sim[idx]
-            valid_inputs += 1
-            continue
+            sim_scores = cosine_sim[idx] # No +=, just =
+            input_found = True
+            
+        # Check Fuzzy Match
+        elif not input_found:
+            fuzzy_matches = find_best_match(text, df['course_title'].tolist(), limit=1)
+            if fuzzy_matches:
+                best_match = fuzzy_matches[0]
+                matched_courses.append(best_match) # Track matches to exclude later
+                idx = indices[best_match]
+                sim_scores = cosine_sim[idx]
+                input_found = True
 
-        fuzzy_matches = find_best_match(text, df['course_title'].tolist(), limit=1)
-        if fuzzy_matches:
-            best_match = fuzzy_matches[0]
-            idx = indices[best_match]
-            sim_scores += cosine_sim[idx]
-            valid_inputs += 1
-            continue
+        # Check Keyword/Topic Match
+        if not input_found:
+            query_vec = tfidf.transform([text])
+            # flatten() is important to make it a 1D array
+            sim_scores = cosine_similarity(query_vec, tfidf_matrix).flatten() 
+            input_found = True
 
-        query_vec = tfidf.transform([text])
-        topic_sim = cosine_similarity(query_vec, tfidf_matrix).flatten()
-        sim_scores += topic_sim
-        valid_inputs += 1
+        # Apply Popularity Weighting to this specific input's scores
+        sim_scores = sim_scores * (0.7 + 0.3 * df['popularity_weight'])
 
-    if valid_inputs == 0:
-        return []
+        # Get the indices of the top N courses for THIS input
+        # We grab slightly more than n (n+5) to account for overlaps/duplicates
+        top_indices = sim_scores.argsort()[::-1][:n+5]
+        
+        # Store the actual rows for this input
+        candidate_lists.append(df.iloc[top_indices])
 
-    sim_scores /= valid_inputs
-    sim_scores = sim_scores * (0.7 + 0.3 * df['popularity_weight'])
+    # 3. Interleave (Round-Robin) the results
+    final_results = []
+    seen_titles = set(matched_courses) # Don't recommend inputs back to user
+    
+    # We loop enough times to try and fill 'n' recommendations
+    max_len = max(len(c) for c in candidate_lists) if candidate_lists else 0
+    
+    for i in range(max_len):
+        for candidates in candidate_lists:
+            # Stop if we have enough
+            if len(final_results) >= n:
+                break
+            
+            # Check if this list has a candidate at index i
+            if i < len(candidates):
+                row = candidates.iloc[i]
+                title = row['course_title']
+                
+                # Add if distinct
+                if title not in seen_titles:
+                    final_results.append(row.to_dict())
+                    seen_titles.add(title)
+        
+        if len(final_results) >= n:
+            break
 
-    sorted_idx = sim_scores.argsort()[::-1]
-    result = df.iloc[sorted_idx]
-
-    result = result[~result['course_title'].isin(matched_courses)]
-    result = result.head(n)
-
-    return result.to_dict(orient="records")
+    return final_results
 
 
 # --------------------------

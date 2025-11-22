@@ -13,7 +13,7 @@ const interestOptions = [
   'Marketing',
   'Data Science',
   'Finance',
-  'Artificial Intelligence',
+  'Forex',
   'Graphic Design',
   'Musical Instruments',
   'Java',
