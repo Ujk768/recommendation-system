@@ -10,17 +10,14 @@ type QuestionnaireProps = {
 
 const interestOptions = [
   'Web Development',
-  'Mobile Development',
+  'Marketing',
   'Data Science',
-  'Machine Learning',
+  'Finance',
   'Artificial Intelligence',
-  'Cloud Computing',
-  'Cybersecurity',
-  'DevOps',
-  'UI/UX Design',
-  'Digital Marketing',
-  'Business Analytics',
-  'Project Management',
+  'Graphic Design',
+  'Musical Instruments',
+  'Java',
+  'Python',
 ];
 
 const skillLevels = [

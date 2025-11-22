@@ -5,8 +5,17 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from rapidfuzz import process, fuzz
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global variables to hold model + data
 df = None
@@ -117,7 +126,7 @@ def get_all_courses():
 
 
 # ✅ Route 2: RECOMMEND COURSES
-@app.post("/recommended")
+@app.post("/recommend")
 def recommended_courses(data: RecommendInput):
     output = recommend_for_user(data.inputs, data.n)
     return {"recommendations": output}
