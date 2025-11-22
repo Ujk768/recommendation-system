@@ -66,7 +66,7 @@ def recommend_for_user(inputs, n=10):
     result = df.iloc[sorted_idx]
 
     result = result[~result['course_title'].isin(matched_courses)]
-    result = result[['course_title', 'subject', 'price', 'num_subscribers']].head(n)
+    result = result.head(n)
 
     return result.to_dict(orient="records")
 
@@ -133,7 +133,7 @@ def get_all_courses(limit: int = 15, page: int = 1):
     start = (page - 1) * limit
     end = start + limit
 
-    data = df[["course_title", "subject", "price", "num_subscribers"]].iloc[start:end]
+    data = df.iloc[start:end]
 
     return {
         "page": page,
