@@ -15,13 +15,22 @@ export default function App() {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
 
+  const dummyPreferences: UserPreferences = {
+    interests: ['Web Development', 'Data Science'],
+    skillLevel: 'beginner',
+    timeCommitment: '5-10',
+    learningGoal: 'skill-upgrade',
+  };
+
   const handleLogin = (name: string, email: string) => {
     setUser({ name, email });
-    setCurrentPage('questionnaire');
+    setPreferences(dummyPreferences);
+    setCurrentPage('recommendations');
   };
 
   const handleSignup = (name: string, email: string) => {
     setUser({ name, email });
+    setPreferences(null);
     setCurrentPage('questionnaire');
   };
 
