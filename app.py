@@ -112,7 +112,7 @@ class RecommendInput(BaseModel):
 # ✅ Route 1: GET ALL COURSES
 @app.get("/getAllCourses")
 def get_all_courses():
-    return df.to_dict(orient="records")
+    return {"courses": df.to_dict(orient="records")}
 # df[["course_id","course_title","url","is_paid","price","num_subscribers","num_reviews"]].to_dict(orient="records")
 
 
