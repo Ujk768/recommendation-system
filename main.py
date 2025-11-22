@@ -9,7 +9,7 @@ df = pd.read_csv('udemy_courses.csv')
 
 print(df.head())
 
-# Combine text fields for TF-IDF features
+# Combine text fields for TF-IDF feature
 df['combined_features'] = (
     df['course_title'].fillna('') + ' ' +
     df['subject'].fillna('') + ' ' +
