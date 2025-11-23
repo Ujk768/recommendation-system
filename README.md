@@ -2,8 +2,17 @@
 
 A personalized course-recommendation platform built with FastAPI (Python) and React + Vite (TypeScript).
 The system recommends Udemy courses based on user preferences, free-text inputs, fuzzy matching, keyword matching, and TF-IDF similarity.
-**
-🚀 Features**
+
+
+
+
+
+
+**🚀 Features**
+
+
+
+
 **🔐 Authentication & User Preferences**
 
 - Login / Signup support
@@ -22,8 +31,7 @@ The system recommends Udemy courses based on user preferences, free-text inputs,
 
 - Learning goal
 
-**🎯 Recommendation Engine
-**
+**🎯 Recommendation Engine**
 - TF-IDF vectorization on course title + subject + level
 
 - Cosine similarity ranking
@@ -45,8 +53,9 @@ The system recommends Udemy courses based on user preferences, free-text inputs,
 - Personalized Recommendation Dashboard
 
 - Clear user flow & state management
-**
-🏗️ Tech Stack**
+
+  
+**🏗️ Tech Stack**
 - Backend (FastAPI)
 
 - FastAPI
@@ -71,15 +80,15 @@ Frontend (React + Vite)
 
 - lucide-react icons
 
-**
-⚙️ Backend Setup (FastAPI)**
+**⚙️ Backend Setup (FastAPI)**
+
 **1. Create & Activate Virtual Environment**
 
 python -m venv venv
 source venv/bin/activate       # macOS / Linux
 venv\Scripts\activate          # Windows
-**
-2. Install Dependencies**
+
+**2. Install Dependencies**
 
 fastapi
 uvicorn
@@ -88,14 +97,13 @@ numpy
 scikit-learn
 rapidfuzz
 python-multipart
-**
-3. Start FastAPI Backend**
+
+**3. Start FastAPI Backend**
 
 **uvicorn main:app --reload**
 
-Backend will run on:
-
-http://127.0.0.1:8000
+**Backend will run on:
+http://127.0.0.1:8000**
 
 **🧠 API Documentation**
 
@@ -155,7 +163,6 @@ npm run dev
 
 
 **Frontend runs at:
-
 http://127.0.0.1:5173**
 
 **🔗 Connecting Frontend & Backend**
