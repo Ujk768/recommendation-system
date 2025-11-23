@@ -322,7 +322,7 @@ export function Recommendations({
             <div className="bg-purple-50 rounded-lg p-4">
               <div className="text-purple-600 mb-1">Learning Goal</div>
               <div className="text-gray-900 capitalize">
-                {preferences.learningGoal.replace("-", " ")}
+                {preferences.learningGoal}
               </div>
             </div>
           </div>
@@ -341,6 +341,7 @@ export function Recommendations({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reccomendedFromApi.map((course) => (
             <CourseCard
+              key={course.course_id}
               course_id={course.course_id.toString()}
               course_title={course.course_title}
               subject={course.subject}

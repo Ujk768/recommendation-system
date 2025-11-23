@@ -9,6 +9,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+USER_DB = {}
+
+class UserPreferences(BaseModel):
+    email: str
+    password: str
+    interests: list[str]
+    skillLevel: str
+    timeCommitment: str
+    learningGoal: str
+
+class LoginRequest(BaseModel):
+    email: str
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -153,6 +166,21 @@ class RecommendInput(BaseModel):
 # --------------------------
 # Routes
 # --------------------------
+
+@app.post("/signup")
+def signup_user(data: UserPreferences):
+    USER_DB[data.email] = data.dict()   # Store preferences in memory
+    return {"message": "User signed up successfully"}
+
+@app.post("/login")
+def login_user(data: LoginRequest):
+    email = data.email
+    if email not in USER_DB:
+        return {"preferences": None}   # new user
+
+    return {"preferences": USER_DB[email]}
+
+
 
 # ✅ Route 1: GET ALL COURSES - simple return all courses
 @app.get("/getAllCourses")

@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { GraduationCap, BookOpen, Target, TrendingUp } from 'lucide-react';
 
 type HomePageProps = {
-  onLogin: (name: string, email: string) => void;
-  onSignup: (name: string, email: string) => void;
+  onLogin: (name: string, email: string , password: string) => void;
+  onSignup: (name: string, email: string, password: string) => void;
+  loginErrorMessage: string | null;
 };
 
-export function HomePage({ onLogin, onSignup }: HomePageProps) {
+export function HomePage({ onLogin, onSignup, loginErrorMessage }: HomePageProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,9 +16,9 @@ export function HomePage({ onLogin, onSignup }: HomePageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      onLogin(name || email.split('@')[0], email);
+      onLogin(name || email.split('@')[0], email,password);
     } else {
-      onSignup(name, email);
+      onSignup(name, email,password);
     }
   };
 
@@ -128,6 +129,9 @@ export function HomePage({ onLogin, onSignup }: HomePageProps) {
                   placeholder="you@example.com"
                   required
                 />
+                {loginErrorMessage && isLogin && (
+                  <p style={{color:"red", fontWeight:500 , padding:2}}>{loginErrorMessage}</p>
+                )}
               </div>
 
               <div>
