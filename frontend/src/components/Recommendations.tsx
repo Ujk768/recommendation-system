@@ -11,7 +11,7 @@ import { UserPreferences } from "../App";
 import axios from "axios";
 import { useEffect } from "react";
 import { useState } from "react";
-import CourseCard from "./ui/courseCard";
+import CourseCard from "./ui/CourseCard";
 
 type RecommendationsProps = {
   userName: string;
