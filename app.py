@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from rapidfuzz import process, fuzz
 from fastapi.middleware.cors import CORSMiddleware
+from collections import Counter
 
 app = FastAPI()
 
@@ -213,4 +214,88 @@ def get_all_courses(limit: int = 15, page: int = 1):
         "limit": limit,
         "total_courses": len(df),
         "courses": data.to_dict(orient="records")
+    }
+
+
+def is_relevant(user_inputs, course_row):
+    """
+    Checks if the user's input exists in the Course Subject OR Title.
+    Returns: Boolean (True/False)
+    """
+    # 1. Prepare data (lowercase for case-insensitive matching)
+    subject = str(course_row.get('subject', '')).lower()
+    title = str(course_row.get('course_title', '')).lower()
+    
+    # 2. Check each user input
+    for keyword in user_inputs:
+        term = keyword.lower().strip()
+        
+        # Check if keyword appears in Subject (Primary Check)
+        if term in subject:
+            return True
+            
+        # Check if keyword appears in Title (Secondary Check - Fallback)
+        # This helps if the Subject is generic (e.g., "Development") but Title has "Python"
+        if term in title:
+            return True
+            
+    return False
+
+class MetricsResponse(BaseModel):
+    precision_score: float
+    matches: int
+    total_recommendations: int
+    subject_distribution: dict
+    diversity_score: float
+
+@app.post("/get-metrics")
+def get_recommendation_metrics(data: RecommendInput):
+    """
+    Calculates system performance for a specific set of inputs 
+    without needing historical user data.
+    """
+    
+    # 1. Run the recommendation logic 
+    # (We re-run it here to analyze the output)
+    recommendations = recommend_for_user(data.inputs, data.n)
+    
+    if not recommendations:
+        return {
+            "error": "No recommendations generated for these inputs."
+        }
+
+    # 2. Initialize Counters
+    relevant_count = 0
+    total_items = len(recommendations)
+    subjects_found = []
+
+    # 3. Analyze every recommendation
+    for rec in recommendations:
+        # Track the subject for distribution analysis
+        subj = rec.get('subject', 'Unknown')
+        subjects_found.append(subj)
+        
+        # Check if this specific recommendation matches the user's input
+        if is_relevant(data.inputs, rec):
+            relevant_count += 1
+
+    # 4. Calculate Precision (Relevance Score)
+    # Formula: Relevant Items / Total Recommended Items
+    precision = round(relevant_count / total_items, 2) if total_items > 0 else 0.0
+
+    # 5. Calculate Diversity Score (Unique Subjects / Total Items)
+    # 1.0 means every course is from a different subject (High Diversity)
+    # 0.1 means all courses are from the same subject (Low Diversity)
+    unique_subjects = len(set(subjects_found))
+    diversity = round(unique_subjects / total_items, 2) if total_items > 0 else 0.0
+
+    return {
+        "input_keywords": data.inputs,
+        "metrics": {
+            "precision_score": precision,  # Closer to 1.0 is better
+            "matches": relevant_count,
+            "total_recommendations": total_items,
+            "diversity_score": diversity   # Context dependent (Usually 0.2-0.5 is good)
+        },
+        "subject_distribution": dict(Counter(subjects_found))
     }

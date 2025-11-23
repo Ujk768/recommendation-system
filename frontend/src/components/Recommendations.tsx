@@ -50,6 +50,15 @@ export interface ApiRes {
   popularity_weight: number;
 }
 
+export type RecommendationMetrics = {
+  precision_score: number;
+  matches: number;
+  total_recommendations: number;
+  diversity_score: number;
+};
+
+
+
 const generateRecommendations = (preferences: UserPreferences): Course[] => {
   const allCourses: Course[] = [
     {
@@ -241,6 +250,22 @@ const generateRecommendationsWithApi = async (data: UserPreferences) => {
   }
 };
 
+const getMetrics = async (
+  pref: UserPreferences,
+  n: number
+): Promise<RecommendationMetrics | {}> => {
+  try {
+    const res = await axios.post("http://127.0.0.1:8000/get-metrics", {
+      inputs: pref.interests,
+      n: n,
+    });
+    return res.data.metrics as RecommendationMetrics;
+  } catch (error) {
+    console.error("Error fetching metrics:", error);
+    return {};
+  }
+};
+
 export function Recommendations({
   userName,
   preferences,
@@ -250,6 +275,7 @@ export function Recommendations({
   // const recommendedCourses = generateRecommendations(preferences);
 
   const [reccomendedFromApi, setReccomendedFromApi] = useState<ApiRes[]>([]);
+  const [metrics, setMetrics] = useState<RecommendationMetrics | null>(null);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -257,6 +283,13 @@ export function Recommendations({
       setReccomendedFromApi(recs);
     };
     fetchRecommendations();
+
+    const fetchMetrics = async () => {
+      const metrics = await getMetrics(preferences, 20);
+      console.log("metrics:", metrics);
+      setMetrics(metrics as RecommendationMetrics);
+    };
+    fetchMetrics();
   }, []);
 
   const recommendedCourses = generateRecommendations(preferences);
@@ -355,6 +388,41 @@ export function Recommendations({
           ))}
         </div>
       </div>
+
+      {/* Metrics Display */}
+      {metrics && (
+        <div className="container mx-auto px-4 py-6">
+          <h2 className="text-gray-900 mb-4">Recommendation Metrics</h2>
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <div className="text-gray-600">Precision Score</div>
+                <div className="text-gray-900 font-semibold">
+                  {metrics.precision_score.toFixed(2)}
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-600">Matches</div>
+                <div className="text-gray-900 font-semibold">
+                  {metrics.matches}
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-600">Total Recommendations</div>
+                <div className="text-gray-900 font-semibold">
+                  {metrics.total_recommendations}
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-600">Diversity Score</div>
+                <div className="text-gray-900 font-semibold">
+                  {metrics.diversity_score.toFixed(2)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
