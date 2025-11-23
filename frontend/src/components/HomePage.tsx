@@ -1,11 +1,48 @@
 import { useState } from 'react';
 import { GraduationCap, BookOpen, Target, TrendingUp } from 'lucide-react';
+import CourseCard, { CourseCardProps } from './ui/CourseCard';
 
 type HomePageProps = {
   onLogin: (name: string, email: string , password: string) => void;
   onSignup: (name: string, email: string, password: string) => void;
   loginErrorMessage: string | null;
 };
+
+const featuredCourses: CourseCardProps[] = [
+  {
+    course_id: "feat-1",
+    course_title: "Modern Web Development with React & TypeScript",
+    subject: "Web Development",
+    level: "Beginner",
+    rating: 4.8,
+    num_subscribers: 125000,
+    content_duration: 12,
+    url: "https://www.udemy.com/course/the-complete-web-development-bootcamp/",
+    popularity_weight: 0.9,
+  },
+  {
+    course_id: "feat-2",
+    course_title: "Cloud Computing on AWS, Azure & GCP",
+    subject: "Cloud Computing",
+    level: "Intermediate",
+    rating: 4.7,
+    num_subscribers: 84000,
+    content_duration: 10,
+    url: "https://www.udemy.com/",
+    popularity_weight: 0.85,
+  },
+  {
+    course_id: "feat-3",
+    course_title: "Data Science & Machine Learning Bootcamp",
+    subject: "Data Science",
+    level: "Intermediate",
+    rating: 4.9,
+    num_subscribers: 192000,
+    content_duration: 15,
+    url: "https://www.udemy.com/",
+    popularity_weight: 0.95,
+  },
+];
 
 export function HomePage({ onLogin, onSignup, loginErrorMessage }: HomePageProps) {
   const [isLogin, setIsLogin] = useState(true);
@@ -168,6 +205,17 @@ export function HomePage({ onLogin, onSignup, loginErrorMessage }: HomePageProps
           </div>
         </div>
       </div>
+      {/* Featured courses under the signup / login area */}
+      <section className="container mx-auto px-4 py-6 mt-[-30px]">
+        <h2 className="text-gray-900 mb-4">
+          Featured courses to get you started
+        </h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {featuredCourses.map((course) => (
+            <CourseCard key={course.course_id} {...course} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
