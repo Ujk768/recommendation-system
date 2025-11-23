@@ -11,6 +11,7 @@ import { UserPreferences } from "../App";
 import axios from "axios";
 import { useEffect } from "react";
 import { useState } from "react";
+import CourseCard from "./ui/courseCard";
 
 type RecommendationsProps = {
   userName: string;
@@ -339,49 +340,17 @@ export function Recommendations({
         {/* Course Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reccomendedFromApi.map((course) => (
-            <div
-              key={course.course_id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-            >
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 h-40 flex items-center justify-center">
-                <BookOpen className="w-16 h-16 text-white opacity-80" />
-              </div>
-              <div className="p-6">
-                {/* Match Score Badge */}
-                {/* <div className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full mb-3">
-                  {Math.min(100, Math.round(course.popularity_weight * 100))}% Match
-                </div> */}
-
-                <h3 className="text-gray-900 mb-2">{course.course_title}</h3>
-
-                <p className="text-gray-600 mb-4 line-clamp-2">
-                  {course.subject}
-                </p>
-
-                {/* Course Stats */}
-                <div className="flex items-center gap-4 mb-4 text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                    {/* <span>{course.rating}</span> */}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>{course.content_duration.toFixed(1)} hrs</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <BarChart className="w-4 h-4" />
-                    <span className="capitalize">{course.level}</span>
-                  </div>
-                </div>
-
-                <div className="text-gray-600 mb-4">
-                  {course.num_subscribers.toLocaleString()} students enrolled
-                </div>
-                <a className="bg-indigo-600 text-white p-5 rounded-lg hover:bg-indigo-700 transition-colors" href={course.url} target="_blank" style={{padding:5}}>
-                  Go to Course
-                </a>
-              </div>
-            </div>
+            <CourseCard
+              course_id={course.course_id.toString()}
+              course_title={course.course_title}
+              subject={course.subject}
+              level={course.level}
+              rating={course.num_reviews ? course.num_reviews / 20 : 0} // Dummy rating calculation
+              num_subscribers={course.num_subscribers}
+              content_duration={course.content_duration}
+              url={course.url}
+              popularity_weight={course.popularity_weight}
+            />
           ))}
         </div>
       </div>
