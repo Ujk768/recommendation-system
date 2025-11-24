@@ -1,164 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>Course Recommendation System</title>
-	<style>
-		body {
-			font-family: Poppins, sans-serif;
-			background: #f5f6fa;
-			margin: 0;
-			padding: 40px;
-			display: flex;
-			justify-content: center;
-		}
-
-		.container {
-			background: white;
-			padding: 30px;
-			border-radius: 16px;
-			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-			width: 450px;
-		}
-
-		h1 {
-			text-align: center;
-			color: #222;
-		}
-
-		label {
-			font-weight: bold;
-			display: block;
-			margin-top: 20px;
-		}
-
-		select,
-		input[type="text"],
-		button {
-			width: 100%;
-			padding: 10px;
-			margin-top: 8px;
-			border-radius: 8px;
-			border: 1px solid #ccc;
-			font-size: 16px;
-		}
-
-		button {
-			background-color: #007bff;
-			color: white;
-			border: none;
-			cursor: pointer;
-			transition: background 0.3s;
-		}
-
-		button:hover {
-			background-color: #0056b3;
-		}
-
-		.results {
-			margin-top: 25px;
-			padding: 15px;
-			background: #f1f1f1;
-			border-radius: 8px;
-		}
-
-		.course {
-			background: white;
-			padding: 10px;
-			margin-top: 10px;
-			border-left: 4px solid #007bff;
-			border-radius: 6px;
-		}
-	</style>
+  <meta charset="UTF-8">
+  <title>Course Recommendation System</title>
+  <style>
+    body { background-color: #F3F3FF; font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
+    .container { width: 50%; background: white; padding: 35px 45px; margin: 40px 0; border-radius: 10px; box-shadow: 0px 4px 14px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; font-weight: bold; }
+    label { font-weight: bold; display: block; margin-top: 20px; }
+    select, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; margin-top: 8px; font-size: 15px; }
+    button { width: 100%; padding: 13px; color: white; background-color: #4568E6; border: 0; border-radius: 5px; margin-top: 25px; font-weight: bold; cursor: pointer; }
+    button:hover { background-color: #3550b7; }
+    .results { margin-top: 25px; padding: 20px; border-radius: 8px; background: #EAF2FF; display: none; }
+    .course { background: #fff; padding: 12px; border-radius: 5px; font-size: 16px; border-left: 5px solid #4568E6; margin-bottom: 10px; cursor: pointer; }
+    .course:hover { background: #F7F7FF; }
+    .details { background: #fff; border-left: 5px solid #28A745; padding: 15px; margin-top: 15px; border-radius: 5px; display: none; }
+    .details a { color: #2765e9; text-decoration: none; }
+  </style>
 </head>
-
 <body>
 
-	<div class="container">
-		<h1>Course Recommendation</h1>
+<div class="container">
+  <h2>📘 Course Recommendation System</h2>
 
-		<label for="interest">Select Your Interest:</label>
-		<select id="interest">
-			<option value="">-- Choose an interest --</option>
-			<option value="ai">Artificial Intelligence</option>
-			<option value="web">Web Development</option>
-			<option value="data">Data Science</option>
-			<option value="cyber">Cyber Security</option>
-			<option value="design">UI/UX Design</option>
-		</select>
+  <label>Select Category</label>
+  <select id="category">
+    <option value="programming">Programming</option>
+    <option value="web">Web Development</option>
+    <option value="data">Data Science</option>
+    <option value="cloud">Cloud Computing</option>
+    <option value="ai">Artificial Intelligence</option>
+  </select>
 
-		<label for="level">Skill Level:</label>
-		<select id="level">
-			<option value="">-- Select your level --</option>
-			<option value="beginner">Beginner</option>
-			<option value="intermediate">Intermediate</option>
-			<option value="advanced">Advanced</option>
-		</select>
+  <label>Enter a Topic / Keyword</label>
+  <input type="text" id="keyword" placeholder="e.g., Python, React, AWS, SQL">
 
-		<button onclick="recommendCourse()">Get Recommendations</button>
+  <button onclick="recommendCourses()">Get Recommendations</button>
 
-		<div id="results" class="results" style="display:none;">
-			<h3>Recommended Courses:</h3>
-			<div id="courseList"></div>
-		</div>
-	</div>
+  <div class="results" id="resultBox">
+    <h3>Recommended Courses</h3>
+    <div id="resultList"></div>
 
-	<script>
-		const courses = {
-			ai: {
-				beginner: ["Intro to AI", "Python for AI Basics", "Machine Learning 101"],
-				intermediate: ["Deep Learning with TensorFlow", "AI Model Deployment", "NLP Applications"],
-				advanced: ["Reinforcement Learning", "Advanced Neural Networks", "AI Ethics & Bias"]
-			},
-			web: {
-				beginner: ["HTML & CSS Basics", "JavaScript Fundamentals", "Intro to Frontend Development"],
-				intermediate: ["React.js Essentials", "Node.js Backend", "Full Stack Projects"],
-				advanced: ["Next.js Framework", "Advanced Web Performance", "Web Security & APIs"]
-			},
-			data: {
-				beginner: ["Excel for Data Analysis", "Intro to Python", "Data Visualization Basics"],
-				intermediate: ["Data Wrangling with Pandas", "SQL for Analysts", "Exploratory Data Analysis"],
-				advanced: ["Machine Learning", "Big Data Tools (Spark, Hadoop)", "Predictive Analytics"]
-			},
-			cyber: {
-				beginner: ["Cybersecurity Basics", "Network Fundamentals", "Password Protection 101"],
-				intermediate: ["Ethical Hacking", "Malware Analysis", "Incident Response"],
-				advanced: ["Penetration Testing", "Cloud Security", "Advanced Network Defense"]
-			},
-			design: {
-				beginner: ["Intro to UI Design", "Color Theory Basics", "Figma Fundamentals"],
-				intermediate: ["Responsive Design", "Prototyping in Figma", "User Testing Methods"],
-				advanced: ["Design Systems", "Advanced Animation", "UX Strategy & Research"]
-			}
-		};
+    <div class="details" id="courseDetails"></div>
+  </div>
+</div>
 
-		function recommendCourse() {
-			const interest = document.getElementById("interest").value;
-			const level = document.getElementById("level").value;
-			const resultDiv = document.getElementById("results");
-			const listDiv = document.getElementById("courseList");
+<script>
+// ✅ MERGED UDEMY COURSE DATA (Code 3)
+const udemyCourses = {
+  programming: [
+    {
+      course_id: "complete-python-bootcamp", 
+      course_title: "The Complete Python Bootcamp From Zero to Hero in Python", 
+      url: "https://www.udemy.com/course/complete-python-bootcamp/", 
+      is_paid: true, 
+      price: 19.99, 
+      num_subscribers: 2107404, 
+      num_reviews: null, 
+      num_lectures: null, 
+      level: "All Levels", 
+      content_duration: null, 
+      subject: "Programming", 
+      popularity_weight: null
+    },
+    {
+      course_id: "100-days-of-code", 
+      course_title: "100 Days of Code™: The Complete Python Pro Bootcamp", 
+      url: "https://www.udemy.com/course/100-days-of-code/", 
+      is_paid: true, 
+      price: 199.99, 
+      num_subscribers: 1690354, 
+      level: "All Levels", 
+      subject: "Programming"
+    },
+    {
+      course_id: "master-python-2025", 
+      course_title: "Master Python Programming in 2025: Zero to Expert in Python", 
+      url: "https://www.udemy.com/course/master-python-programming-complete-python-bootcamp/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 21606, 
+      level: "All Levels", 
+      subject: "Programming"
+    },
+    {
+      course_id: "python-for-everyone", 
+      course_title: "Complete Python Bootcamp For Everyone From Zero to …", 
+      url: "https://www.udemy.com/course/python-foreveryone/", 
+      is_paid: true, 
+      price: null, 
+      level: "All Levels", 
+      subject: "Programming"
+    },
+    {
+      course_id: "python-basic-projects", 
+      course_title: "Complete Python Bootcamp: From Basics to Projects", 
+      url: "https://www.udemy.com/course/complete-python-bootcamp-from-basics-to-projects/", 
+      is_paid: true, 
+      price: null, 
+      level: "Beginner", 
+      subject: "Programming"
+    }
+  ],
 
-			listDiv.innerHTML = ""; // clear old results
+  web: [
+    {
+      course_id: "full-stack-bootcamp", 
+      course_title: "The Complete Web Development Bootcamp", 
+      url: "https://www.udemy.com/course/the-complete-web-development-bootcamp/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 1513045, 
+      level: "All Levels", 
+      subject: "Web Development"
+    },
+    {
+      course_id: "php-full-stack", 
+      course_title: "The Complete PHP Full Stack Web Developer Bootcamp", 
+      url: "https://www.udemy.com/course/the-complete-php-full-stack-web-developer-bootcamp/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 130000, 
+      level: "Beginner", 
+      subject: "Web Development"
+    },
+    {
+      course_id: "react-redux", 
+      course_title: "Modern React With Redux", 
+      url: "https://www.udemy.com/course/react-redux/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 650000, 
+      level: "Intermediate", 
+      subject: "Web Development"
+    },
+    {
+      course_id: "javascript-master", 
+      course_title: "The Complete JavaScript Course 2025: From Zero to Expert", 
+      url: "https://www.udemy.com/course/the-complete-javascript-course/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 900000, 
+      level: "All Levels", 
+      subject: "Web Development"
+    },
+    {
+      course_id: "nodejs-complete", 
+      course_title: "Node.js – The Complete Guide (MVC, REST APIs, GraphQL)", 
+      url: "https://www.udemy.com/course/nodejs-the-complete-guide/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 700000, 
+      level: "All Levels", 
+      subject: "Web Development"
+    }
+  ],
 
-			if (!interest || !level) {
-				alert("Please select both interest and skill level.");
-				return;
-			}
+  cloud: [
+    {
+      course_id: "aws-saa-c03", 
+      course_title: "Ultimate AWS Certified Solutions Architect Associate 2025", 
+      url: "https://www.udemy.com/course/aws-certified-solutions-architect-associate-saa-c03/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 1200281, 
+      level: "All Levels", 
+      subject: "Cloud Computing"
+    },
+    {
+      course_id: "aws-saa-c03-in28", 
+      course_title: "AWS Certified Solutions Architect Associate - SAA C03", 
+      url: "https://www.udemy.com/course/aws-certified-solutions-architect-associate-step-by-step/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 62902, 
+      level: "Beginner", 
+      subject: "Cloud Computing"
+    },
+    {
+      course_id: "aws-sol-arch-professional", 
+      course_title: "AWS Certified Solutions Architect - Professional 2025", 
+      url: "https://www.udemy.com/course/aws-certified-solutions-architect-professional/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 20915, 
+      level: "Expert", 
+      subject: "Cloud Computing"
+    },
+    {
+      course_id: "aws-practice-exam-associate", 
+      course_title: "Practice Exams | AWS Certified Solutions Architect Associate", 
+      url: "https://www.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 252009, 
+      level: "Beginner", 
+      subject: "Cloud Computing"
+    },
+    {
+      course_id: "azure-admin", 
+      course_title: "AZ-104 Microsoft Azure Administrator Certification Prep", 
+      url: "https://www.udemy.com/course/az104-azure/", 
+      is_paid: true, 
+      price: null, 
+      num_subscribers: 200000, 
+      level: "All Levels", 
+      subject: "Cloud Computing"
+    }
+  ],
 
-			const recs = courses[interest][level];
-			resultDiv.style.display = "block";
+  data: [
+    {
+      course_id: "python-data-science-ml",
+      course_title: "Python for Data Science & Machine Learning Bootcamp",
+      url: "https://www.udemy.com/course/python-for-data-science-and-machine-learning-bootcamp/",
+      is_paid: true,
+      price: 14.99,
+      num_subscribers: 900000,
+      level: "Beginner",
+      subject: "Data Science"
+    },
+    {
+      course_id: "data-science-az",
+      course_title: "Data Science A-Z™: Real-Life Data Science Exercises",
+      url: "https://www.udemy.com/course/datascience/",
+      is_paid: true,
+      price: 15.99,
+      num_subscribers: 500000,
+      level: "Beginner",
+      subject: "Data Science"
+    },
+    {
+      course_id: "statistics-ml",
+      course_title: "Statistics for Machine Learning",
+      url: "https://www.udemy.com/course/statistics-for-machine-learning/",
+      is_paid: true,
+      price: null,
+      num_subscribers: 200000,
+      level: "Beginner",
+      subject: "Data Science"
+    },
+    {
+      course_id: "tableau-bootcamp",
+      course_title: "Tableau 2025 A-Z: Hands-On Tableau Training for Data Science",
+      url: "https://www.udemy.com/course/tableau10/",
+      is_paid: true,
+      price: null,
+      num_subscribers: 450000,
+      level: "All Levels",
+      subject: "Data Science"
+    },
+    {
+      course_id: "sql-data-analysis",
+      course_title: "The Complete SQL Bootcamp: Go from Zero to Hero",
+      url: "https://www.udemy.com/course/the-complete-sql-bootcamp/",
+      is_paid: true,
+      price: null,
+      num_subscribers: 700000,
+      level: "All Levels",
+      subject: "Data Science"
+    }
+  ],
 
-			recs.forEach(course => {
-				const div = document.createElement("div");
-				div.className = "course";
-				div.textContent = course;
-				listDiv.appendChild(div);
-			});
-		}
-	</script>
+  ai: [
+    {
+      course_id: "ai-az",
+      course_title: "Artificial Intelligence A-Z™: Learn How To Build An AI",
+      url: "https://www.udemy.com/course/artificial-intelligence-az/",
+      is_paid: true,
+      Price: 14.99,
+      num_subscribers: 700000,
+      level: "Beginner",
+      subject: "Artificial Intelligence"
+    },
+    {
+      course_id: "machine-learning-az",
+      course_title: "Machine Learning A-Z™: Hands-On Python & R In Data Science",
+      url: "https://www.udemy.com/course/machinelearning/",
+      is_paid: true,
+      price: 13.99,
+      num_subscribers: 1500000,
+      level: "Intermediate",
+      subject: "Artificial Intelligence"
+    },
+    {
+      course_id: "deep-learning-az",
+      course_title: "Deep Learning A-Z™: Hands-On Neural Networks",
+      url: "https://www.udemy.com/course/deeplearning/",
+      is_paid: true,
+      price: null,
+      num_subscribers: 500000,
+      level: "Intermediate",
+      subject: "Artificial Intelligence"
+    },
+    {
+      course_id: "chatgpt-complete",
+      course_title: "ChatGPT Mega Course – GPT-4, GPT-5 & AI Tools",
+      url: "https://www.udemy.com/course/chatgpt-complete-guide/",
+      is_paid: true,
+      price: null,
+      num_subscribers: 300000,
+      level: "All Levels",
+      subject: "Artificial Intelligence"
+    },
+    {
+      course_id: "nlp-complete",
+      course_title: "NLP - Natural Language Processing with Python",
+      url: "https://www.udemy.com/course/nlp-natural-language-processing-with-python/",
+      is_paid: true,
+      price: null,
+      num_subscribers: 200000,
+      level: "All Levels",
+      subject: "Artificial Intelligence"
+    }
+  ]
+};
+
+// ============================
+//       FUNCTIONALITY
+// ============================
+
+async function recommendCourses() {
+  const category = document.getElementById("category").value;
+  const keyword = document.getElementById("keyword").value.trim().toLowerCase();
+
+  const resultBox = document.getElementById("resultBox");
+  const resultList = document.getElementById("resultList");
+  const detailsDiv = document.getElementById("courseDetails");
+
+  resultList.innerHTML = "";
+  detailsDiv.style.display = "none";
+
+  let courses = udemyCourses[category];
+
+  if (keyword) {
+    courses = courses.filter(c => c.course_title.toLowerCase().includes(keyword));
+  }
+
+  if (!courses.length) {
+    resultList.innerHTML = "<p>No courses found.</p>";
+    resultBox.style.display = "block";
+    return;
+  }
+
+  resultBox.style.display = "block";
+
+  courses.forEach(course => {
+    const div = document.createElement("div");
+    div.className = "course";
+    div.textContent = course.course_title;
+    div.onclick = () => showDetails(course);
+    resultList.appendChild(div);
+  });
+}
+
+function showDetails(course) {
+  const detailsDiv = document.getElementById("courseDetails");
+
+  detailsDiv.innerHTML = `
+      <strong>${course.course_title}</strong> <br><br>
+      <b>Course ID:</b> ${course.course_id} <br>
+      <b>Level:</b> ${course.level || "N/A"} <br>
+      <b>Price:</b> ${course.is_paid ? (course.price ? "$" + course.price : "Paid") : "Free"} <br>
+      <b>Duration:</b> ${course.content_duration || "N/A"} hours <br>
+      <b>Subscribers:</b> ${course.num_subscribers || "N/A"} <br>
+      <b>Reviews:</b> ${course.num_reviews || "N/A"} <br>
+      <b>Lectures:</b> ${course.num_lectures || "N/A"} <br>
+      <b>Subject:</b> ${course.subject || "N/A"} <br>
+      <b>Popularity Weight:</b> ${course.popularity_weight || "N/A"} <br><br>
+      <b>Link:</b> <a href="${course.url}" target="_blank">Open Course</a>
+  `;
+
+  detailsDiv.style.display = "block";
+}
+</script>
 
 </body>
-
 </html>
